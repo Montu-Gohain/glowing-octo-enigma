@@ -1,0 +1,55 @@
+PO : 230111
+
+Page : Load Start
+
+Bill In Time : //input[@name="billsInTime"]
+Unload Start Time : //input[@name="lumpStartTime"]
+Add Employee : //div[@id="addEmployee"]
+
+
+Page : Unload End / Check Out
+
+Total Start pallets : //input[@name="totalstartpallets"]
+
+CHEP : //input[@name="startChepPallets"]
+PECO : //input[@name="startPECOPallets"]
+IGPS ://input[@name="startIGPSPallets"]
+WOOD : //input[@name="startBrownPallets"]
+
+End Large Pallets : //input[@name="endLargePallets"]
+
+Unload Finish Time : //input[@name="lumpEndTime"]
+Bills Out Time : //input[@name="billsOutTime"]
+Bills to Driver Time : //input[@name="outDoorTime"]
+
+Once you enter the values in page and reach Load Receipt page , just navigate to Payment page 
+
+Payment Page navigation icon : //*[@id="truckActionMenu"]/a[4]
+
+In Payment page 
+
+Click on Alert Dropdown 
+
+Alert : //select[@name="alert"]
+Alert option (Payment Complete) : //option[@value="Payment Complete"]
+
+Payment Assistance Fee : //input[@name="isPaymentAssist"]
+
+Choose payment Type : //select[@name="paymentType"]
+Payment Option (Relay) : //option[@value="RELAY"]
+Check Tendered Check Amount : //input[@name="truckBill.checkTenderedAmount"]
+Check Tendered Payment method : //option[@value="21363"]
+Check Tendered Check Number : //input[@name="truckBill.checkNumber"]
+
+>>> Now navigate to Load Receipt Page
+
+Load Receipt Navigation Icon : //*[@id="truckActionMenu"]/a[8]
+Complete Load Button : //input[@id="complete_load"]
+
+>>>>>>>>>> Delay Reason Choosing Pop-up Modal
+
+Choose Delay Reason Xpath : //select[@id="delayReason"]
+Option to choose from the list : //option[@value="32711"]
+Complete Load Button : //button[@id="btnDelaySave"]
+
+
