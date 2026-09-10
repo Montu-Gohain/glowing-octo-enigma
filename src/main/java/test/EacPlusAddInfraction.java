@@ -6,6 +6,7 @@ import java.time.Duration;
 import java.util.Properties;
 
 import org.openqa.selenium.By;
+import org.openqa.selenium.JavascriptExecutor;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.chrome.ChromeDriver;
@@ -130,7 +131,8 @@ public class EacPlusAddInfraction {
                         try {
 
                                 By warehouseProceedBtn = By
-                                                .xpath("//p[text()='" + warehouseToBeSelected + "']/..//button");
+                                                .xpath("//h3[text()='" + warehouseToBeSelected
+                                                                + "']/parent::div//button");
 
                                 // Select warehouse
                                 wait.until(
@@ -205,7 +207,8 @@ public class EacPlusAddInfraction {
                                         addInfractionFormTest.info("Selected infraction type from the list");
                                         System.out.println("Selected infraction type from the list");
 
-                                        Thread.sleep(1500); // allow the Add Compliance Infraction form to load
+                                        Thread.sleep(2000); // wait 2s after reaching the Add Compliance Infraction page
+                                                            // for it to fully load
 
                                         // =========================
                                         // PO#
@@ -243,9 +246,12 @@ public class EacPlusAddInfraction {
                                         addInfractionFormTest.info("Selected Shipment# suggestion: " + shipment);
 
                                         // =========================
-                                        // Carrier (custom dropdown: "Select Carrier or add new")
-                                        // Was previously commented out — now wired up the same
-                                        // way as the Vendor dropdown below.
+                                        // Carrier (searchable dropdown: click to open, type to
+                                        // filter, then select the matching suggestion).
+                                        //
+                                        // Like Shipment# above, this custom combobox only renders
+                                        // its option list once you start typing — clicking alone
+                                        // (the old behavior) never produced any option to click.
                                         // =========================
 
                                         By carrierDropdown = By
@@ -253,18 +259,47 @@ public class EacPlusAddInfraction {
                                         wait.until(ExpectedConditions.elementToBeClickable(carrierDropdown)).click();
                                         addInfractionFormTest.info("Opened Carrier dropdown");
 
-                                        Thread.sleep(500); // allow the option list to render
+                                        // The visible field is often a styled wrapper around a real
+                                        // <input> that only becomes usable after the click above.
+                                        // Default guess: an <input> nested inside the same element.
+                                        // Override XPATH_CARRIER_SEARCH_INPUT in testdata.properties
+                                        // once you've confirmed the real element in DevTools.
+                                        String carrierSearchInputXpath = optionalProperty(properties,
+                                                        "XPATH_CARRIER_SEARCH_INPUT",
+                                                        requireProperty(properties, "XPATH_CARRIER") + "//input");
+                                        By carrierSearchInput = By.xpath(carrierSearchInputXpath);
+                                        wait.until(ExpectedConditions
+                                                        .visibilityOfElementLocated(carrierSearchInput))
+                                                        .sendKeys(carrier);
+                                        addInfractionFormTest.info("Typed Carrier: " + carrier);
 
+                                        Thread.sleep(1000); // allow the filtered option list to render
+
+                                        // Scope to role="option": virtually every custom-select
+                                        // library (React Select, MUI Autocomplete, Ant Design,
+                                        // Downshift, etc.) tags real suggestion rows with
+                                        // role="option", but never the input/control itself. This
+                                        // avoids accidentally matching the typed text that's
+                                        // sitting visibly in the search box (which also "contains"
+                                        // the same string). Match the full text exactly and
+                                        // case-insensitively since the UI may render the option in
+                                        // uppercase (e.g. "TEST VENDOR") via CSS while the
+                                        // underlying text is "Test Vendor".
                                         String carrierOptionXpath = optionalProperty(properties,
                                                         "XPATH_CARRIER_OPTION",
-                                                        "//*[self::li or self::div][normalize-space(text())='"
-                                                                        + carrier + "']");
+                                                        "//*[@role='option'][translate(normalize-space(.), "
+                                                                        + "'ABCDEFGHIJKLMNOPQRSTUVWXYZ', 'abcdefghijklmnopqrstuvwxyz')='"
+                                                                        + carrier.toLowerCase() + "']");
                                         By carrierOption = By.xpath(carrierOptionXpath);
-                                        wait.until(ExpectedConditions.elementToBeClickable(carrierOption)).click();
+                                        WebElement carrierOptionEl = wait
+                                                        .until(ExpectedConditions.elementToBeClickable(carrierOption));
+                                        clickRobustly(driver, carrierOptionEl);
                                         addInfractionFormTest.info("Selected Carrier: " + carrier);
 
                                         // =========================
-                                        // Vendor (custom dropdown: "Select Vendor or add new")
+                                        // Vendor (searchable dropdown: click to open, type to
+                                        // filter, then select the matching suggestion; falls back
+                                        // to clicking an "Add new" row if no match appears).
                                         // =========================
 
                                         By vendorDropdown = By
@@ -272,30 +307,51 @@ public class EacPlusAddInfraction {
                                         wait.until(ExpectedConditions.elementToBeClickable(vendorDropdown)).click();
                                         addInfractionFormTest.info("Opened Vendor dropdown");
 
-                                        Thread.sleep(500); // allow the option list to render
+                                        String vendorSearchInputXpath = optionalProperty(properties,
+                                                        "XPATH_VENDOR_SEARCH_INPUT",
+                                                        requireProperty(properties, "XPATH_VENDOR_DROPDOWN")
+                                                                        + "//input");
+                                        By vendorSearchInput = By.xpath(vendorSearchInputXpath);
+                                        wait.until(ExpectedConditions
+                                                        .visibilityOfElementLocated(vendorSearchInput))
+                                                        .sendKeys(vendor);
+                                        addInfractionFormTest.info("Typed Vendor: " + vendor);
+
+                                        Thread.sleep(1000); // allow the filtered option list to render
 
                                         try {
+                                                // Same role="option" scoping + exact-match reasoning
+                                                // as Carrier above — avoids matching the typed text
+                                                // still visible in the search box itself.
                                                 String vendorOptionXpath = optionalProperty(properties,
                                                                 "XPATH_VENDOR_OPTION",
-                                                                "//*[self::li or self::div][normalize-space(text())='"
-                                                                                + vendor + "']");
+                                                                "//*[@role='option'][translate(normalize-space(.), "
+                                                                                + "'ABCDEFGHIJKLMNOPQRSTUVWXYZ', 'abcdefghijklmnopqrstuvwxyz')='"
+                                                                                + vendor.toLowerCase() + "']");
                                                 By vendorOption = By.xpath(vendorOptionXpath);
-                                                wait.until(ExpectedConditions.elementToBeClickable(vendorOption))
-                                                                .click();
+                                                WebElement vendorOptionEl = wait.until(
+                                                                ExpectedConditions.elementToBeClickable(vendorOption));
+                                                clickRobustly(driver, vendorOptionEl);
                                                 addInfractionFormTest.info("Selected existing Vendor: " + vendor);
                                         } catch (Exception vendorNotFound) {
-                                                // "add new" fallback — adjust the input xpath once you've inspected it
-                                                String addNewInputXpath = optionalProperty(properties,
-                                                                "XPATH_VENDOR_ADD_NEW_INPUT",
-                                                                "//input[@placeholder='Add new vendor']");
-                                                By vendorAddNewInput = By.xpath(addNewInputXpath);
-                                                wait.until(ExpectedConditions
-                                                                .visibilityOfElementLocated(vendorAddNewInput))
-                                                                .sendKeys(vendor);
-                                                driver.findElement(vendorAddNewInput)
-                                                                .sendKeys(org.openqa.selenium.Keys.ENTER);
+                                                // "add new" fallback — the typed text is kept in the
+                                                // search input, and the panel typically shows an
+                                                // "Add new" row instead of a match. Kept as
+                                                // role="option" + contains() since the row's full
+                                                // text usually includes both "Add new" and the typed
+                                                // value (e.g. "+ Add new \"Test\""). Adjust the xpath
+                                                // once you've inspected the live DOM for this state.
+                                                String addNewOptionXpath = optionalProperty(properties,
+                                                                "XPATH_VENDOR_ADD_NEW_OPTION",
+                                                                "//*[@role='option'][contains(translate(normalize-space(.), "
+                                                                                + "'ABCDEFGHIJKLMNOPQRSTUVWXYZ', 'abcdefghijklmnopqrstuvwxyz'), 'add new')]");
+                                                By vendorAddNewOption = By.xpath(addNewOptionXpath);
+                                                WebElement vendorAddNewOptionEl = wait.until(
+                                                                ExpectedConditions.elementToBeClickable(
+                                                                                vendorAddNewOption));
+                                                clickRobustly(driver, vendorAddNewOptionEl);
                                                 addInfractionFormTest
-                                                                .info("Vendor not found in list — added new Vendor: "
+                                                                .info("Vendor not found in list — clicked 'Add new' for Vendor: "
                                                                                 + vendor);
                                         }
 
@@ -459,6 +515,19 @@ public class EacPlusAddInfraction {
         }
 
         /**
+         * Clicks an element normally, falling back to a JS click if the normal
+         * click is intercepted (e.g. by an overlay during a dropdown's open
+         * animation) or otherwise fails.
+         */
+        private static void clickRobustly(WebDriver driver, WebElement element) {
+                try {
+                        element.click();
+                } catch (Exception normalClickFailed) {
+                        ((JavascriptExecutor) driver).executeScript("arguments[0].click();", element);
+                }
+        }
+
+        /**
          * Resolves a path the same way loadProperties() resolves testdata.properties:
          * relative to the working directory the test is launched from (project root
          * in Eclipse/Maven runs). Keep ATTACHMENT_FILEPATH in testdata.properties
@@ -518,13 +587,13 @@ public class EacPlusAddInfraction {
         // =========================
         // Get Optional Property (with fallback default)
         //
-        // Several xpaths (Description, Carrier/Vendor option text match,
-        // attachment input, Submit button) were not present in the
-        // testdata.properties shared so far. Rather than fail the whole run,
-        // this falls back to a reasonable default derived from the
-        // screenshots, and logs that the default was used so it's easy to
-        // spot and override with a real property once you've inspected the
-        // live DOM.
+        // Several xpaths (Description, Carrier/Vendor search input and option
+        // text match, Vendor "add new" row, attachment input, Submit button)
+        // were not present in the testdata.properties shared so far. Rather
+        // than fail the whole run, this falls back to a reasonable default
+        // derived from the screenshots, and logs that the default was used so
+        // it's easy to spot and override with a real property once you've
+        // inspected the live DOM.
         // =========================
 
         private static String optionalProperty(
