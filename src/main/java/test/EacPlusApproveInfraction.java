@@ -58,6 +58,7 @@ public class EacPlusApproveInfraction {
                         String auditorEmail = requireProperty(properties, "AuditorUserEmail");
                         String auditorPassword = requireProperty(properties, "AuditorUserPassword");
                         String targetPO = requireProperty(properties, "AuditorTargetPO");
+                        String intededAction = requireProperty(properties, "IntendedAction");
 
                         // =========================
                         // Launch Chrome
@@ -142,16 +143,16 @@ public class EacPlusApproveInfraction {
 
                                 wait.until(ExpectedConditions.visibilityOfElementLocated(complianceIdCell));
 
-                                String statusBeforeApproval = wait
+                                String statusBeforeUpdate = wait
                                                 .until(ExpectedConditions.visibilityOfElementLocated(statusCell))
                                                 .getText();
 
                                 approveTest.info(
                                                 "Status for PO# " + targetPO + " before approval: "
-                                                                + statusBeforeApproval);
+                                                                + statusBeforeUpdate);
                                 System.out.println(
                                                 "Status for PO# " + targetPO + " before approval: "
-                                                                + statusBeforeApproval);
+                                                                + statusBeforeUpdate);
 
                                 Thread.sleep(1000); // at least 1s before every click
 
@@ -172,7 +173,7 @@ public class EacPlusApproveInfraction {
                                 // Click the Approve button
                                 // =========================
 
-                                By approveButton = By.xpath("//button[text()=\"Approve\"]");
+                                By approveButton = By.xpath("//button[text()='" + intededAction + "']");
 
                                 Thread.sleep(1000); // at least 1s before every click
 
@@ -215,25 +216,25 @@ public class EacPlusApproveInfraction {
 
                                 Thread.sleep(2000); // allow navigation back to the list page
 
-                                String statusAfterApproval = wait
+                                String statusAfterUpdate = wait
                                                 .until(ExpectedConditions.visibilityOfElementLocated(statusCell))
                                                 .getText();
 
                                 approveTest.info(
                                                 "Status for PO# " + targetPO + " after approval: "
-                                                                + statusAfterApproval);
+                                                                + statusAfterUpdate);
                                 System.out.println(
                                                 "Status for PO# " + targetPO + " after approval: "
-                                                                + statusAfterApproval);
+                                                                + statusAfterUpdate);
 
                                 approveTest.pass(
                                                 "Infraction for PO# " + targetPO
                                                                 + " approved. Status changed from '"
-                                                                + statusBeforeApproval + "' to '"
-                                                                + statusAfterApproval + "'");
+                                                                + statusBeforeUpdate + "' to '"
+                                                                + statusAfterUpdate + "'");
                                 System.out.println(
-                                                "Infraction approved. Status changed from '" + statusBeforeApproval
-                                                                + "' to '" + statusAfterApproval + "'");
+                                                "Infraction updated. Status changed from '" + statusBeforeUpdate
+                                                                + "' to '" + statusAfterUpdate + "'");
 
                         } catch (Exception exception) {
 
