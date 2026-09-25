@@ -169,3 +169,13 @@ Contributions are welcome! Please follow these steps:
 ## 📜 License
 
 Distributed under the MIT License. See `LICENSE` for more information.
+
+<!-- Todo : Test case : Top 10 Chargeback -->
+
+## Xpaths
+
+Hamburger menu :
+
+Top 10 Chargeback nav link :
+
+> In Top 10 Chargeback page Click on the total infractions in any warehouse name with Violation Category
