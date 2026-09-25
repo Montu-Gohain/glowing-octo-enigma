@@ -122,7 +122,7 @@ public class EacPlusTopTenChargeback {
                         // Wait 2 seconds after login before interacting with the menu
                         // =========================
 
-                        Thread.sleep(6000);
+                        Thread.sleep(4000);
 
                         // =========================
                         // Navigate to Top 10 Chargeback
@@ -153,7 +153,7 @@ public class EacPlusTopTenChargeback {
                         navigateTest.info("Clicked Top 10 Chargeback nav link");
                         System.out.println("Clicked Top 10 Chargeback nav link");
 
-                        Thread.sleep(5000); // allow the Top 10 Chargeback page to load
+                        Thread.sleep(4000); // allow the Top 10 Chargeback page to load
 
                         By chargebackTableRows = By.xpath("//table[@class=\"dynamicEacList\"]/tbody/tr");
 
@@ -207,7 +207,7 @@ public class EacPlusTopTenChargeback {
                                                                 + selectedViolationCategory
                                                                 + "', Total Infractions: " + selectedTotalInfractions);
 
-                                Thread.sleep(8000); // at least 1s before every click
+                                Thread.sleep(5000); // at least 1s before every click
 
                                 // =========================
                                 // Click the Total Infractions count for the selected row
@@ -225,7 +225,7 @@ public class EacPlusTopTenChargeback {
                                                 "Clicked Total Infractions count for Warehouse: '"
                                                                 + selectedWarehouseName + "'");
 
-                                Thread.sleep(6000); // allow the All Infractions page to load
+                                Thread.sleep(4000); // allow the All Infractions page to load
 
                                 // =========================
                                 // Verify the All Infractions table rows all match the
